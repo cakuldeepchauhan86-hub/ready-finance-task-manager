@@ -1,427 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ready Finance Task Manager</title>
-  <meta name="description" content="Ready Finance Task Manager — fast, minimal, local-first." />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Crect width='256' height='256' rx='48' fill='%23000'/%3E%3Cpath fill='%23fff' d='M64 64h128v24H64zM64 112h96v24H64zM64 160h64v24H64z'/%3E%3C/svg%3E">
   <style>
-    :root{
-      --bg1:#f7fafc; --bg2:#ffffff; --ink:#0f172a; --muted:#64748b; --brand:#0f766e;
-      --green:#10b981; --red:#ef4444; --amber:#f59e0b; --sky:#0284c7; --ring:#e2e8f0;
-      --shadow: 0 10px 20px rgba(0,0,0,.06);
-      --radius: 16px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; color:var(--ink); background:linear-gradient(140deg,var(--bg1),var(--bg2));}
-    .container{max-width:1000px; margin:0 auto; padding:24px;}
-    header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px;}
-    .title{display:flex; align-items:center; gap:12px; font-weight:800; font-size:26px;}
-    .logo{width:40px; height:40px; border-radius:14px; background:#000; display:grid; place-items:center; color:#fff; box-shadow:var(--shadow);}
-    .muted{color:var(--muted)}
-    .card{background:#fff; border:1px solid var(--ring); border-radius:var(--radius); box-shadow:var(--shadow);}
-    .card h3{margin:0 0 6px 0; font-size:18px}
-    .pad{padding:16px}
-    .grid{display:grid; gap:12px}
-    @media(min-width:860px){ .grid-5{grid-template-columns:repeat(5,1fr);} .grid-6{grid-template-columns:repeat(6,1fr);} }
-    button, input, select, textarea{font:inherit}
-    input, select, textarea{border:1px solid var(--ring); border-radius:10px; padding:10px 12px; width:100%;}
-    textarea{resize:vertical; min-height:40px}
-    .btn{border:1px solid var(--ring); background:#fff; padding:10px 14px; border-radius:12px; cursor:pointer;}
-    .btn.primary{background:#000; color:#fff; border-color:#000}
-    .btn.ghost{background:transparent}
-    .btn.danger{background:#fee2e2; border-color:#fecaca; color:#991b1b}
-    .btn-group{display:flex; gap:8px; flex-wrap:wrap}
-    .badge{display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; border:1px solid var(--ring); font-size:12px;}
-    .badge.red{background:#fee2e2; border-color:#fecaca; color:#b91c1c}
-    .badge.amber{background:#fffbeb; border-color:#fde68a; color:#92400e}
-    .badge.green{background:#ecfdf5; border-color:#a7f3d0; color:#065f46}
-    .toolbar{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-    .toolbar .group{display:flex; gap:8px; align-items:center}
-    .row{display:flex; gap:12px; align-items:stretch; flex-wrap:wrap}
-    .stats .tile{display:flex; gap:10px; align-items:center; padding:12px; border:1px solid var(--ring); border-radius:12px; background:#fff}
-    .tile .big{font-weight:700; font-size:22px}
-    .list{display:grid; gap:10px}
-    .task{display:flex; align-items:flex-start; gap:10px; padding:12px; border:1px solid var(--ring); border-radius:12px; background:#ffffffcc; backdrop-filter: blur(4px);}
-    .task.overdue{border-color:#fecaca}
-    .task .title{font-size:16px; font-weight:600}
-    .task.done .title{text-decoration: line-through; color:var(--muted)}
-    .grow{flex:1 1 auto; min-width:240px}
-    .nowrap{white-space:nowrap}
-    .right{margin-left:auto}
-    .chip{font-size:12px; padding:2px 8px; border:1px solid var(--ring); border-radius:999px}
-    .sep{height:1px; background:var(--ring); margin:8px 0}
-    .small{font-size:12px}
-    .hidden{display:none !important}
-    footer{margin-top:8px; text-align:center; font-size:12px}
+    body { font-family: Arial, sans-serif; background: #f8f9fa; padding: 20px; }
+    h1 { text-align: center; color: #2c3e50; }
+    .task-form { display: flex; gap: 10px; margin-bottom: 20px; }
+    input, button { padding: 8px; font-size: 14px; }
+    button { background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    ul { list-style: none; padding: 0; }
+    li { background: white; padding: 10px; margin-bottom: 8px; display: flex;
+         justify-content: space-between; align-items: center; border-radius: 5px;
+         border: 1px solid #ddd; }
+    .done { text-decoration: line-through; color: gray; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div>
-        <div class="title"><span class="logo">RF</span> Ready Finance Task Manager</div>
-        <div class="muted small">Fast, minimal, local-first. Add tasks, filter, sort, and export/import JSON.</div>
-      </div>
-      <div class="btn-group">
-        <button id="exportBtn" class="btn">Export</button>
-        <label class="btn" for="importFile">Import</label>
-        <input id="importFile" type="file" accept="application/json" class="hidden" />
-      </div>
-    </header>
 
-    <section class="stats grid grid-5">
-      <div class="tile"><span class="big" id="stat-total">0</span><span class="muted">Total</span></div>
-      <div class="tile"><span class="big" id="stat-open">0</span><span class="muted">Open</span></div>
-      <div class="tile"><span class="big" id="stat-done">0</span><span class="muted">Done</span></div>
-      <div class="tile"><span class="big" id="stat-overdue">0</span><span class="muted">Overdue</span></div>
-      <div class="tile"><span class="big" id="stat-high">0</span><span class="muted">High priority</span></div>
-    </section>
+  <h1>Ready Finance Task Manager</h1>
 
-    <section class="card pad" style="margin-top:14px">
-      <h3>New Task</h3>
-      <div class="grid grid-6">
-        <input id="new-title" placeholder="Task title" />
-        <input id="new-due" type="date" />
-        <select id="new-priority">
-          <option value="high">High</option>
-          <option value="medium" selected>Medium</option>
-          <option value="low">Low</option>
-        </select>
-        <input id="new-tags" placeholder="tags, comma,separated" />
-        <input id="new-notes" placeholder="Notes (optional)" />
-        <button id="addBtn" class="btn primary">Add</button>
-      </div>
-    </section>
-
-    <section class="card pad" style="margin-top:14px">
-      <h3>Your Tasks</h3>
-      <div class="toolbar" style="margin-bottom:8px">
-        <div class="group">
-          <input id="search" placeholder="Search title, notes, #tag" style="width:260px" />
-          <div class="chip">Filters</div>
-          <select id="filter-status">
-            <option value="">Status: Any</option>
-            <option value="open">Open</option>
-            <option value="in_progress">In Progress</option>
-            <option value="done">Done</option>
-          </select>
-          <select id="filter-priority">
-            <option value="">Priority: Any</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </select>
-          <button id="clearFilters" class="btn ghost">Clear</button>
-        </div>
-        <div class="group right">
-          <select id="sort-by">
-            <option value="createdAt">Sort by: Created</option>
-            <option value="updatedAt">Sort by: Updated</option>
-            <option value="due">Sort by: Due</option>
-            <option value="priority">Sort by: Priority</option>
-            <option value="title">Sort by: Title</option>
-          </select>
-          <select id="sort-dir">
-            <option value="desc">Desc</option>
-            <option value="asc">Asc</option>
-          </select>
-        </div>
-      </div>
-
-      <div id="bulkBar" class="row hidden" style="margin-bottom:8px">
-        <div class="muted small" id="selectedCount">0 selected</div>
-        <div class="right btn-group">
-          <button id="bulkDone" class="btn">Mark done</button>
-          <button id="bulkDelete" class="btn danger">Delete</button>
-          <button id="bulkClear" class="btn ghost">Clear</button>
-        </div>
-      </div>
-
-      <div id="list" class="list"></div>
-    </section>
-
-    <footer class="muted">Local storage is used to keep your tasks in this browser.</footer>
+  <div class="task-form">
+    <input type="text" id="taskInput" placeholder="Enter task">
+    <input type="date" id="dueDate">
+    <button onclick="addTask()">Add Task</button>
   </div>
 
+  <ul id="taskList"></ul>
+
   <script>
-    // --------- Data & Helpers ---------
-    const KEY = "tasks.v1";
-    const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 };
-    const el = (q) => document.querySelector(q);
-    const els = (q) => Array.from(document.querySelectorAll(q));
-    const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
-    const todayDateOnly = () => new Date(new Date().toDateString());
+    const taskList = document.getElementById('taskList');
 
-    function save(tasks){ localStorage.setItem(KEY, JSON.stringify(tasks)); }
-    function load(){ try{ const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : []; } catch { return []; } }
-
-    // state
-    let tasks = load();
-    let selected = new Set();
-
-    // filters state
-    const state = {
-      q: "", status: "", priority: "", sortBy: "createdAt", sortDir: "desc"
-    };
-
-    // --------- CRUD ---------
-    function addTask(partial){
-      const now = Date.now();
-      const t = {
-        id: uid(),
-        title: (partial.title||"Untitled").trim(),
-        notes: partial.notes||"",
-        due: partial.due||"",
-        priority: partial.priority||"medium",
-        tags: (partial.tags||[]).map(s=>s.trim()).filter(Boolean),
-        status: partial.status||"open",
-        createdAt: now,
-        updatedAt: now
-      };
-      tasks = [t, ...tasks];
-      save(tasks);
-      render();
-    }
-
-    function updateTask(id, patch){
-      tasks = tasks.map(t => t.id===id ? { ...t, ...patch, updatedAt: Date.now() } : t);
-      save(tasks); render();
-    }
-    function removeTask(id){
-      tasks = tasks.filter(t=>t.id!==id);
-      selected.delete(id);
-      save(tasks); render();
-    }
-    function bulkRemove(ids){
-      tasks = tasks.filter(t=>!ids.includes(t.id));
-      ids.forEach(id=>selected.delete(id));
-      save(tasks); render();
-    }
-    function toggleDone(id){
-      const t = tasks.find(x=>x.id===id);
-      if(!t) return;
-      updateTask(id, { status: t.status === "done" ? "open" : "done" });
-    }
-
-    // --------- Filters / Sorting ---------
-    function applyFilters(list){
-      const q = state.q.toLowerCase();
-      let arr = list.filter(t => {
-        const matchesQ = !q || t.title.toLowerCase().includes(q) || (t.notes||"").toLowerCase().includes(q) || t.tags.some(tag => ("#"+tag.toLowerCase()).includes(q) || tag.toLowerCase().includes(q));
-        const matchesStatus = !state.status || t.status===state.status;
-        const matchesPriority = !state.priority || t.priority===state.priority;
-        return matchesQ && matchesStatus && matchesPriority;
-      });
-      arr.sort((a,b)=>{
-        let cmp=0;
-        switch(state.sortBy){
-          case "priority": cmp = PRIORITY_ORDER[a.priority]-PRIORITY_ORDER[b.priority]; break;
-          case "title": cmp = a.title.localeCompare(b.title); break;
-          case "due": cmp = (a.due||"").localeCompare(b.due||""); break;
-          case "createdAt":
-          case "updatedAt": cmp = a[state.sortBy]-b[state.sortBy]; break;
-        }
-        return state.sortDir==="asc" ? cmp : -cmp;
-      });
-      return arr;
-    }
-
-    // --------- Stats ---------
-    function updateStats(){
-      const total = tasks.length;
-      const done = tasks.filter(t=>t.status==="done").length;
-      const open = total - done;
-      const overdue = tasks.filter(t=>t.due && t.status!=="done" && new Date(t.due) < todayDateOnly()).length;
-      const high = tasks.filter(t=>t.priority==="high" && t.status!=="done").length;
-      el("#stat-total").textContent = total;
-      el("#stat-open").textContent = open;
-      el("#stat-done").textContent = done;
-      el("#stat-overdue").textContent = overdue;
-      el("#stat-high").textContent = high;
-    }
-
-    // --------- Render ---------
-    function render(){
-      updateStats();
-      const list = el("#list");
-      list.innerHTML = "";
-      const arr = applyFilters(tasks);
-      arr.forEach(t => list.appendChild(taskRow(t)));
-      updateBulkBar();
-    }
-
-    function taskRow(t){
-      const item = document.createElement("div");
-      const overdue = t.due && t.status!=="done" && new Date(t.due) < todayDateOnly();
-      item.className = "task" + (overdue ? " overdue" : "") + (t.status==="done" ? " done" : "");
-      item.innerHTML = `
-        <input type="checkbox" class="select" ${selected.has(t.id)?"checked":""} />
-        <button class="btn ghost toggle" title="Mark done/undo">●</button>
-        <div class="grow">
-          <div class="row" style="align-items:center">
-            <div class="title grow">${escapeHtml(t.title)}</div>
-            ${t.due ? `<span class="badge ${overdue?"red":""}">📅 ${t.due}</span>` : ""}
-            ${badgePriority(t.priority)}
-            <span class="badge">${statusLabel(t.status)}</span>
+    function loadTasks() {
+      const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+      taskList.innerHTML = '';
+      tasks.forEach((task, index) => {
+        const li = document.createElement('li');
+        li.className = task.done ? 'done' : '';
+        li.innerHTML = `
+          <span>${task.text} (Due: ${task.date || 'No date'})</span>
+          <div>
+            <button onclick="toggleDone(${index})">Done</button>
+            <button onclick="deleteTask(${index})" style="background:red">Delete</button>
           </div>
-          ${t.notes ? `<div class="muted small" style="margin-top:6px; white-space:pre-wrap">${escapeHtml(t.notes)}</div>` : ""}
-          ${t.tags.length ? `<div class="row small" style="margin-top:6px; gap:6px">${t.tags.map(x=>`<span class="chip">#${escapeHtml(x)}</span>`).join("")}</div>` : ""}
-        </div>
-        <div class="btn-group">
-          <button class="btn ghost edit">Edit</button>
-          <button class="btn danger del">Delete</button>
-        </div>
-      `;
-
-      // interactions
-      item.querySelector(".toggle").onclick = () => toggleDone(t.id);
-      item.querySelector(".del").onclick = () => { if(confirm("Delete task?")) removeTask(t.id); };
-      item.querySelector(".edit").onclick = () => openEditor(t);
-      item.querySelector(".select").onchange = (e) => {
-        e.target.checked ? selected.add(t.id) : selected.delete(t.id);
-        updateBulkBar();
-      };
-      return item;
-    }
-
-    function badgePriority(p){
-      const map = { high: "red", medium: "amber", low: "green" };
-      const label = p[0].toUpperCase() + p.slice(1);
-      return `<span class="badge ${map[p]}">⚑ ${label}</span>`;
-    }
-    function statusLabel(s){
-      return s==="done" ? "Done" : (s==="in_progress" ? "In Progress" : "Open");
-    }
-    function escapeHtml(str){
-      return String(str).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',\"'\":\"&#39;\",'\"':'&quot;'}[c]));
-    }
-
-    // --------- Editor ---------
-    function openEditor(t){
-      const wrap = document.createElement("div");
-      wrap.className = "card pad";
-      wrap.innerHTML = `
-        <h3>Edit Task</h3>
-        <div class="grid grid-6">
-          <input id="e-title" value="${escapeHtml(t.title)}" />
-          <input id="e-due" type="date" value="${escapeHtml(t.due||"")}" />
-          <select id="e-priority">
-            <option value="high" ${t.priority==="high"?"selected":""}>High</option>
-            <option value="medium" ${t.priority==="medium"?"selected":""}>Medium</option>
-            <option value="low" ${t.priority==="low"?"selected":""}>Low</option>
-          </select>
-          <input id="e-tags" value="${escapeHtml(t.tags.join(", "))}" />
-          <input id="e-notes" value="${escapeHtml(t.notes||"")}" />
-          <select id="e-status">
-            <option value="open" ${t.status==="open"?"selected":""}>Open</option>
-            <option value="in_progress" ${t.status==="in_progress"?"selected":""}>In Progress</option>
-            <option value="done" ${t.status==="done"?"selected":""}>Done</option>
-          </select>
-        </div>
-        <div class="btn-group" style="margin-top:10px">
-          <button class="btn primary" id="save">Save</button>
-          <button class="btn ghost" id="cancel">Cancel</button>
-        </div>
-      `;
-      const list = el("#list");
-      list.parentElement.insertBefore(wrap, list);
-      const cleanup = () => wrap.remove();
-      wrap.querySelector("#cancel").onclick = cleanup;
-      wrap.querySelector("#save").onclick = () => {
-        updateTask(t.id, {
-          title: wrap.querySelector("#e-title").value,
-          due: wrap.querySelector("#e-due").value,
-          priority: wrap.querySelector("#e-priority").value,
-          notes: wrap.querySelector("#e-notes").value,
-          tags: wrap.querySelector("#e-tags").value.split(",").map(s=>s.trim()).filter(Boolean),
-          status: wrap.querySelector("#e-status").value
-        });
-        cleanup();
-      };
-      wrap.scrollIntoView({behavior:"smooth", block:"center"});
-    }
-
-    // --------- Bulk Bar ---------
-    function updateBulkBar(){
-      const bar = el("#bulkBar");
-      const count = selected.size;
-      el("#selectedCount").textContent = count + " selected";
-      bar.classList.toggle("hidden", count===0);
-    }
-
-    // --------- Import / Export ---------
-    el("#exportBtn").onclick = () => {
-      const data = JSON.stringify(tasks, null, 2);
-      const blob = new Blob([data], {type:"application/json"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = "ready-finance-tasks.json"; a.click();
-      URL.revokeObjectURL(url);
-    };
-    el("#importFile").addEventListener("change", (e)=>{
-      const file = e.target.files[0];
-      if(!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        try{
-          const data = JSON.parse(String(reader.result||""));
-          if(!Array.isArray(data)) throw new Error("Invalid JSON");
-          const sanitized = data.map(d => ({
-            id: d.id || uid(),
-            title: d.title || "Untitled",
-            notes: d.notes || "",
-            due: d.due || "",
-            priority: ["high","medium","low"].includes(d.priority) ? d.priority : "medium",
-            tags: Array.isArray(d.tags) ? d.tags : [],
-            status: ["open","in_progress","done"].includes(d.status) ? d.status : "open",
-            createdAt: Number(d.createdAt) || Date.now(),
-            updatedAt: Date.now()
-          }));
-          tasks = sanitized; save(tasks); render();
-        }catch(err){ alert("Import failed: " + err.message); }
-      };
-      reader.readAsText(file);
-      e.target.value="";
-    });
-
-    // --------- UI bindings ---------
-    el("#addBtn").onclick = () => {
-      const t = el("#new-title").value.trim();
-      if(!t){ el("#new-title").focus(); return; }
-      addTask({
-        title: t,
-        due: el("#new-due").value,
-        priority: el("#new-priority").value,
-        tags: el("#new-tags").value.split(",").map(s=>s.trim()).filter(Boolean),
-        notes: el("#new-notes").value
+        `;
+        taskList.appendChild(li);
       });
-      el("#new-title").value = "";
-      el("#new-due").value = "";
-      el("#new-priority").value = "medium";
-      el("#new-tags").value = "";
-      el("#new-notes").value = "";
-    };
+    }
 
-    el("#search").oninput = (e)=>{ state.q = e.target.value; render(); };
-    el("#filter-status").onchange = (e)=>{ state.status = e.target.value; render(); };
-    el("#filter-priority").onchange = (e)=>{ state.priority = e.target.value; render(); };
-    el("#clearFilters").onclick = ()=>{
-      state.q = ""; state.status=""; state.priority=""; state.sortBy="createdAt"; state.sortDir="desc";
-      el("#search").value=""; el("#filter-status").value=""; el("#filter-priority").value="";
-      el("#sort-by").value="createdAt"; el("#sort-dir").value="desc"; render();
-    };
-    el("#sort-by").onchange = (e)=>{ state.sortBy = e.target.value; render(); };
-    el("#sort-dir").onchange = (e)=>{ state.sortDir = e.target.value; render(); };
+    function addTask() {
+      const text = document.getElementById('taskInput').value.trim();
+      const date = document.getElementById('dueDate').value;
+      if (!text) return alert('Please enter a task!');
+      const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+      tasks.push({ text, date, done: false });
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+      document.getElementById('taskInput').value = '';
+      document.getElementById('dueDate').value = '';
+      loadTasks();
+    }
 
-    el("#bulkDone").onclick = ()=>{ selected.forEach(id=>{ const t=tasks.find(x=>x.id===id); if(t && t.status!=='done') t.status='done'; }); save(tasks); selected.clear(); render(); };
-    el("#bulkDelete").onclick = ()=>{ if(selected.size && confirm("Delete selected tasks?")) { bulkRemove([...selected]); } };
-    el("#bulkClear").onclick = ()=>{ selected.clear(); updateBulkBar(); els(".select").forEach(ch=>ch.checked=false); };
+    function toggleDone(index) {
+      const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+      tasks[index].done = !tasks[index].done;
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+      loadTasks();
+    }
 
-    // initial render
-    render();
+    function deleteTask(index) {
+      const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+      tasks.splice(index, 1);
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+      loadTasks();
+    }
+
+    loadTasks();
   </script>
+
 </body>
 </html>
